@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>AoC Runner</title>
+    <style>
+        body { font-family: monospace; background: #0f0f23; color: #cccccc; padding: 20px; }
+        h1 { color: #00cc00; text-shadow: 0 0 5px #00cc00; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #333; padding: 10px; text-align: left; }
+        th { color: #00cc00; }
+        button { background: #00cc00; color: #0f0f23; border: none; padding: 10px 20px; font-weight: bold; cursor: pointer; font-family: monospace;}
+        
+        /* Status Indicators */
+        .status-idle { color: #666; }
+        .status-running { color: #ffff66; }
+        .status-success { color: #00cc00; }
+        .status-error { color: #ff0000; }
+
+        /* Animation */
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .hourglass::after { content: "⏳"; display: inline-block; animation: spin 2s linear infinite; }
+    </style>
+</head>
+<body>
+    <h1>Advent of Code Runner</h1>
+    <button id="runAll">Run All Solutions</button>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Day</th>
+                <th>Tests</th>
+                <th>Result</th>
+                <th>Time (ms)</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+    </table>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const tbody = document.getElementById('tableBody');
+
+        function getRow(day) {
+            let row = document.getElementById(`row-${day}`);
+            if (!row) {
+                row = document.createElement('tr');
+                row.id = `row-${day}`;
+                row.innerHTML = `
+                    <td>Day ${day}</td>
+                    <td id="test-${day}" class="status-idle">-</td>
+                    <td id="result-${day}" class="status-idle">Waiting...</td>
+                    <td id="time-${day}">-</td>
+                `;
+                tbody.appendChild(row);
+            }
+            return row;
+        }
+
+        socket.on('init', (days) => {
+            tbody.innerHTML = '';
+            days.forEach(day => getRow(day));
+        });
+
+        document.getElementById('runAll').onclick = () => {
+            // Reset UI
+            document.querySelectorAll('[id^=result-]').forEach(el => {
+                el.innerText = 'Queued...';
+                el.className = 'status-idle';
+                el.classList.remove('hourglass');
+            });
+            socket.emit('run-all');
+        };
+
+        socket.on('worker-update', (data) => {
+            const { day, type } = data;
+            const testCell = document.getElementById(`test-${day}`);
+            const resultCell = document.getElementById(`result-${day}`);
+            const timeCell = document.getElementById(`time-${day}`);
+
+            if (type === 'test-start') {
+                testCell.innerText = 'Running...';
+                testCell.className = 'status-running';
+            }
+            if (type === 'test-result') {
+                if (data.success) {
+                    testCell.innerText = '✅ Passed';
+                    testCell.className = 'status-success';
+                } else {
+                    testCell.innerText = `❌ Fail (Exp: ${data.expected}, Got: ${data.actual})`;
+                    testCell.className = 'status-error';
+                }
+            }
+            if (type === 'solve-start') {
+                resultCell.innerText = '';
+                resultCell.className = 'hourglass'; // Starts animation
+            }
+            if (type === 'solve-done') {
+                resultCell.classList.remove('hourglass');
+                resultCell.innerText = data.result;
+                resultCell.className = 'status-success';
+                timeCell.innerText = data.durationMs;
+            }
+            if (type === 'error') {
+                resultCell.classList.remove('hourglass');
+                resultCell.innerText = data.error;
+                resultCell.className = 'status-error';
+            }
+        });
+    </script>
+</body>
+</html>
