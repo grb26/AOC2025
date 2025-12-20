@@ -32,7 +32,7 @@ async function run() {
             post({ type: 'test-start', count: solution.tests.length, part: 1 });
             
             for (const [index, test] of solution.tests.entries()) {
-                console.log(`Running Day ${day} Part 1 Test #${index + 1}`);
+                //console.log(`Running Day ${day} Part 1 Test #${index + 1}`);
                 const result = await solution.solve_part1(test.input);
                 const success = result == test.expected_part1;
                 
@@ -56,7 +56,7 @@ async function run() {
             post({ type: 'test-start', count: solution.tests.length, part: 2 });
             
             for (const [index, test] of solution.tests.entries()) {
-                console.log(`Running Day ${day} Part 2 Test #${index + 1}`);
+                //console.log(`Running Day ${day} Part 2 Test #${index + 1}`);
                 const result = await solution.solve_part2(test.input);
                 const success = result == test.expected_part2;
                 
