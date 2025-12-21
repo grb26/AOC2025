@@ -14,28 +14,28 @@ export class WorkerPool extends EventEmitter {
         const cpus = os.cpus().length;
         // Constraint: Leave 2 cores free, but ensure at least 1 worker
         this.maxWorkers = Math.max(1, cpus - 2);
-        console.log(`WorkerPool initialized with size: ${this.maxWorkers}`);
+        // console.log(`WorkerPool initialized with size: ${this.maxWorkers}`);
     }
 
     // Add a task to the queue
     public runTask(task: WorkerTask) {
-        console.log(`[WorkerPool] Adding task for day: ${task.day}, Queue size before: ${this.queue.length}, Active workers: ${this.activeWorkers}/${this.maxWorkers}`);
+        // console.log(`[WorkerPool] Adding task for day: ${task.day}, Queue size before: ${this.queue.length}, Active workers: ${this.activeWorkers}/${this.maxWorkers}`);
         this.queue.push(task);
         this.processNext();
     }
 
     private processNext() {
         if (this.queue.length === 0) {
-            console.log(`[WorkerPool] Queue is empty, nothing to process`);
+            // console.log(`[WorkerPool] Queue is empty, nothing to process`);
             return;
         }
         if (this.activeWorkers >= this.maxWorkers) {
-            console.log(`[WorkerPool] Max workers reached (${this.activeWorkers}/${this.maxWorkers}), waiting...`);
+            // console.log(`[WorkerPool] Max workers reached (${this.activeWorkers}/${this.maxWorkers}), waiting...`);
             return;
         }
 
         const task = this.queue.shift()!;
-        console.log(`[WorkerPool] Processing task for day: ${task.day}, Active workers now: ${this.activeWorkers + 1}/${this.maxWorkers}`);
+        // console.log(`[WorkerPool] Processing task for day: ${task.day}, Active workers now: ${this.activeWorkers + 1}/${this.maxWorkers}`);
         this.activeWorkers++;
 
         this.spawnWorker(task);
