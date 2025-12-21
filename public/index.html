@@ -9,6 +9,9 @@
         th, td { border: 1px solid #333; padding: 10px; text-align: left; }
         th { color: #00cc00; }
         button { background: #00cc00; color: #0f0f23; border: none; padding: 10px 20px; font-weight: bold; cursor: pointer; font-family: monospace;}
+        .play-btn { background: none; border: none; color: #00cc00; font-size: 20px; padding: 5px 10px; cursor: pointer; flex-shrink: 0; }
+        .play-btn:hover { color: #ffff66; }
+        .day-cell { display: flex; align-items: center; gap: 8px; }
         
         /* Status Indicators */
         .status-idle { color: #666; }
@@ -45,6 +48,18 @@
     <script>
         const socket = io();
         const tbody = document.getElementById('tableBody');
+        
+        socket.on('connect', () => {
+            console.log('Connected to server');
+        });
+        
+        socket.on('error', (error) => {
+            console.error('Socket error:', error);
+        });
+        
+        socket.on('disconnect', () => {
+            console.log('Disconnected from server');
+        });
 
         function getRow(day) {
             let row = document.getElementById(`row-${day}`);
@@ -52,7 +67,7 @@
                 row = document.createElement('tr');
                 row.id = `row-${day}`;
                 row.innerHTML = `
-                    <td>Day ${day}</td>
+                    <td><div class="day-cell"><button class="play-btn" data-day="${day}">▶</button> Day ${day}</div></td>
                     <td id="test-${day}-1" class="status-idle">-</td>
                     <td id="result-${day}-1" class="status-idle">Waiting...</td>
                     <td id="time-${day}-1">-</td>
@@ -88,6 +103,26 @@
             });
             socket.emit('run-all');
         };
+
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('play-btn')) {
+                const day = parseInt(e.target.dataset.day);
+                console.log('Running day:', day);
+                // Reset UI for this day
+                document.getElementById(`result-${day}-1`).innerText = 'Queued...';
+                document.getElementById(`result-${day}-1`).className = 'status-idle';
+                document.getElementById(`test-${day}-1`).innerText = '-';
+                document.getElementById(`test-${day}-1`).className = 'status-idle';
+                document.getElementById(`result-${day}-2`).innerText = 'Queued...';
+                document.getElementById(`result-${day}-2`).className = 'status-idle';
+                document.getElementById(`test-${day}-2`).innerText = '-';
+                document.getElementById(`test-${day}-2`).className = 'status-idle';
+                document.getElementById(`messages-${day}`).innerText = '';
+                document.getElementById(`messages-${day}`).className = 'status-idle';
+                console.log('Emitting run-day:', day);
+                socket.emit('run-day', day);
+            }
+        });
 
         socket.on('worker-update', (data) => {
             const { day, type, part } = data;

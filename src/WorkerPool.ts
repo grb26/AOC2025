@@ -19,15 +19,23 @@ export class WorkerPool extends EventEmitter {
 
     // Add a task to the queue
     public runTask(task: WorkerTask) {
+        console.log(`[WorkerPool] Adding task for day: ${task.day}, Queue size before: ${this.queue.length}, Active workers: ${this.activeWorkers}/${this.maxWorkers}`);
         this.queue.push(task);
         this.processNext();
     }
 
     private processNext() {
-        if (this.queue.length === 0) return;
-        if (this.activeWorkers >= this.maxWorkers) return;
+        if (this.queue.length === 0) {
+            console.log(`[WorkerPool] Queue is empty, nothing to process`);
+            return;
+        }
+        if (this.activeWorkers >= this.maxWorkers) {
+            console.log(`[WorkerPool] Max workers reached (${this.activeWorkers}/${this.maxWorkers}), waiting...`);
+            return;
+        }
 
         const task = this.queue.shift()!;
+        console.log(`[WorkerPool] Processing task for day: ${task.day}, Active workers now: ${this.activeWorkers + 1}/${this.maxWorkers}`);
         this.activeWorkers++;
 
         this.spawnWorker(task);
