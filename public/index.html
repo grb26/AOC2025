@@ -107,7 +107,7 @@
         document.addEventListener('click', (e) => {
             if (e.target.classList.contains('play-btn')) {
                 const day = parseInt(e.target.dataset.day);
-                console.log('Running day:', day);
+                //console.log('Running day:', day);
                 // Reset UI for this day
                 document.getElementById(`result-${day}-1`).innerText = 'Queued...';
                 document.getElementById(`result-${day}-1`).className = 'status-idle';
@@ -119,7 +119,7 @@
                 document.getElementById(`test-${day}-2`).className = 'status-idle';
                 document.getElementById(`messages-${day}`).innerText = '';
                 document.getElementById(`messages-${day}`).className = 'status-idle';
-                console.log('Emitting run-day:', day);
+                //console.log('Emitting run-day:', day);
                 socket.emit('run-day', day);
             }
         });
