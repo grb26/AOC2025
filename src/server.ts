@@ -45,7 +45,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('run-day', (day: number) => {
-        console.log('Received run-day event for day:', day);
+        // console.log('Received run-day event for day:', day);
         pool.runTask({
             day,
             solutionPath: path.join(solutionsDir, `day${day}.ts`)
